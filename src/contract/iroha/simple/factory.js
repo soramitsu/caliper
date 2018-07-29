@@ -24,7 +24,8 @@ const open = function(context, domain, money) {
         },
         {
             tx: irohaType.txType.ADD_ASSET_QUANTITY,
-            args: [context.id, 'rmb#'+domain, money]
+            // args: [context.id, 'rmb#'+domain, money]
+            args: ['rmb#'+domain, money]
         }
     ];
 };

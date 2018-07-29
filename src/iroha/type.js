@@ -11,7 +11,7 @@
 
 const txType =  {
     // commands
-    ADD_ASSET_QUANTITY : {type:'command', fn:'addAssetQuantity', argslen: 3},
+    ADD_ASSET_QUANTITY : {type:'command', fn:'addAssetQuantity', argslen: 2},
     ADD_PEER : {type:'command', fn:'addPeer', argslen: 2},
     ADD_SIGNATORY : {type:'command', fn:'addSignatory', argslen: 2},
     APPEND_ROLE : {type:'command', fn:'appendRole', argslen: 2},

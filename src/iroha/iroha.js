@@ -24,6 +24,7 @@ const txStatus =  require('iroha-lib/pb/endpoint_pb.js').TxStatus;
 const pbTransaction = require('iroha-lib/pb/block_pb.js').Transaction;
 const pbQuery = require('iroha-lib/pb/queries_pb.js').Query;
 const endpointGrpc = require('iroha-lib/pb/endpoint_grpc_pb.js');
+const Responses = require('iroha-lib/pb/qry_responses_pb.js');
 const util = require('../comm/util.js');
 const BlockchainInterface = require('../comm/blockchain-interface.js');
 const irohaType = require('./type.js');
@@ -137,7 +138,7 @@ function irohaQuery(client, account, time, counter, keys, commands, callback) {
             .blob();
         let queryArray = blob2array(queryBlob);
         let protoQuery = pbQuery.deserializeBinary(queryArray);
-        let responseType = require('iroha-lib/pb/responses_pb.js').QueryResponse.ResponseCase;
+        let responseType = Responses.QueryResponse.ResponseCase;
         return new Promise((resolve, reject) => {
             client.find(protoQuery, (err, response) => {
                 if(err){
