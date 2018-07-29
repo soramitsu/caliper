@@ -25,7 +25,7 @@ const txType =  {
     REVOKE_PERMISSION : {type:'command', fn:'revokePermission', argslen: 2},
     SET_ACCOUNT_DETAIL : {type:'command', fn:'setAccountDetail', argslen: 3},
     SET_ACCOUNT_QUORUM : {type:'command', fn:'setAccountQuorum', argslen: 2},
-    SUBTRACT_ASSET_QUANTITY : {type:'command', fn:'subtractAssetQuantity', argslen: 3},
+    SUBTRACT_ASSET_QUANTITY : {type:'command', fn:'subtractAssetQuantity', argslen: 2},
     TRANSFER_ASSET : {type:'command', fn:'transferAsset', argslen: 5},
     // query, started from 100
     GET_ACCOUNT : {type:'query', fn:'getAccount', argslen: 1},
