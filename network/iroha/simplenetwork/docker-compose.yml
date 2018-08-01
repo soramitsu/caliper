@@ -50,6 +50,56 @@ services:
     cap_add:
       - SYS_PTRACE
 
+  iroha-node2:
+    image: hyperledger/iroha@sha256:eb059d2a03544e2bde91a0e16b7d03076b09bc31e9b970c1c4269f02084e8e91
+    container_name: iroha_node2
+    ports:
+    - "50053:50051"
+    - "20002:20000"
+    - "10003:10001"
+    environment:
+    - IROHA_POSTGRES_HOST=iroha_pg2
+    - IROHA_POSTGRES_PORT=5432
+    - IROHA_POSTGRES_USER=iroha
+    - IROHA_POSTGRES_PASSWORD=helloworld
+    - KEY=node2
+    - CCACHE_DIR=/tmp/ccache
+    depends_on:
+    - iroha_pg2
+    entrypoint: ["../wait-for-it.sh", "iroha_pg2:5432", "--", "irohad", "--genesis_block", "/opt/iroha/genesis.block", "--config", "/opt/iroha/node2/config.sample", "--keypair_name", "node2"]
+    tty: true
+    volumes:
+    - ./:/opt/iroha
+    - ccache-data:/tmp/ccache
+    working_dir: /opt/iroha/node2
+    cap_add:
+    - SYS_PTRACE
+
+  iroha-node3:
+    image: hyperledger/iroha@sha256:eb059d2a03544e2bde91a0e16b7d03076b09bc31e9b970c1c4269f02084e8e91
+    container_name: iroha_node3
+    ports:
+    - "50054:50051"
+    - "20003:20000"
+    - "10004:10001"
+    environment:
+    - IROHA_POSTGRES_HOST=iroha_pg3
+    - IROHA_POSTGRES_PORT=5432
+    - IROHA_POSTGRES_USER=iroha
+    - IROHA_POSTGRES_PASSWORD=helloworld
+    - KEY=node3
+    - CCACHE_DIR=/tmp/ccache
+    depends_on:
+    - iroha_pg3
+    entrypoint: ["../wait-for-it.sh", "iroha_pg3:5432", "--", "irohad", "--genesis_block", "/opt/iroha/genesis.block", "--config", "/opt/iroha/node3/config.sample", "--keypair_name", "node3"]
+    tty: true
+    volumes:
+    - ./:/opt/iroha
+    - ccache-data:/tmp/ccache
+    working_dir: /opt/iroha/node3
+    cap_add:
+    - SYS_PTRACE
+
   iroha_pg0:
     image: postgres:9.5
     container_name: iroha_pg0
@@ -63,6 +113,20 @@ services:
     environment:
       - POSTGRES_USER=iroha
       - IROHA_POSTGRES_PASSWORD=helloworld
+
+  iroha_pg2:
+    image: postgres:9.5
+    container_name: iroha_pg2
+    environment:
+    - POSTGRES_USER=iroha
+    - IROHA_POSTGRES_PASSWORD=helloworld
+
+  iroha_pg3:
+    image: postgres:9.5
+    container_name: iroha_pg3
+    environment:
+    - POSTGRES_USER=iroha
+    - IROHA_POSTGRES_PASSWORD=helloworld
 
 volumes:
   ccache-data:

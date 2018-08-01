@@ -22,6 +22,22 @@
                 }
               },
               {
+                "addPeer": {
+                  "peer": {
+                    "address": "iroha-node2:10001",
+                    "peerKey": "vd1YQE0TFeDrJ5AsXXyOsGAsFiOPAFdz30BrwZEwiSk="
+                  }
+                }
+              },
+              {
+                "addPeer": {
+                  "peer": {
+                    "address": "iroha-node3:10001",
+                    "peerKey": "avAMsrwrmUk5DjJhD0yXO8fi5lnJd3fRHmQA/RDWCTs="
+                  }
+                }
+              },
+              {
                 "createRole": {
                   "roleName": "admin",
                   "permissions": [
