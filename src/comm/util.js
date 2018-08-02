@@ -35,7 +35,7 @@ class Util {
 
     /**
      * Simple log method to output to the console
-     * @param {any} msg messages to log
+     * @param {string|any} msg messages to log
      */
     static log(...msg) {
         // eslint-disable-next-line no-console

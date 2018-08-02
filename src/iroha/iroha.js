@@ -117,18 +117,21 @@ function irohaCommand(client, account, time, keys, commands) {
  * @param {iroha.Keypair} keys - keypair to sign
  * @param {Array} commands - query commands
  * @param {Function} callback - callback with query response
- * @returns {undefined}
+ * @returns {Promise<any>}
  */
 function irohaQuery(client, account, time, counter, keys, commands, callback) {
     try {
         let queryCommand = commands[0];
-        let query = queryBuilder.creatorAccountId(account)
+        let query = queryBuilder
+            .creatorAccountId(account)
             .createdTime(time)
             .queryCounter(counter);
         let tx   = queryCommand.tx;
         let args = queryCommand.args;
         if(args.length !== tx.argslen) {
-            throw new Error('Wrong arguments number for ' + tx.fn + ' : expected ' + tx.argslen + ' , got ' + args.length);
+            throw new Error(
+                `Wrong arguments number for ${tx.fn} : expected ${tx.argslen} , got ${args.length}`
+            );
         }
         query = query[tx.fn].apply(query, args);
         query = query.build();
@@ -141,13 +144,13 @@ function irohaQuery(client, account, time, counter, keys, commands, callback) {
         let responseType = Responses.QueryResponse.ResponseCase;
         return new Promise((resolve, reject) => {
             client.find(protoQuery, (err, response) => {
-                if(err){
+                if(err) {
                     reject(err);
                 }
                 else {
                     if(response.getResponseCase() === responseType.ERROR_RESPONSE) { // error response
                         util.log('Query: ', JSON.stringify(queryCommand));
-                        reject(new Error('Query error, error code : ' + response.getErrorResponse().getReason()));
+                        reject(new Error(`Query error, error code : ${response.getErrorResponse().getReason()}, error message: ${response.getErrorResponse().getMessage()}`));
                     }
                     else {
                         callback(response);
