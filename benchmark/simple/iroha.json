@@ -12,6 +12,12 @@
       },
       "node1": {
         "torii": "localhost:50052"
+      },
+      "node2": {
+        "torii": "localhost:50053"
+      },
+      "node3": {
+        "torii": "localhost:50054"
       }
     },
     "fakecontract": [
@@ -20,7 +26,7 @@
   },
   "info" : {
     "Version": "develop",
-    "Size": "2 Peers",
+    "Size": "4 Peers",
     "Distribution": "Single Host"
   }
 }

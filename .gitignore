@@ -6,8 +6,10 @@ node_modules/*
 package-lock.json
 output.log
 
-# Ignore any generted html files
+# Ignore any generated html files (except templates)
 *.html
+!report.html
+!index.html
 
 # Ignore DS_Store files from Mac
 **.DS_Store

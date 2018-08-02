@@ -9,7 +9,7 @@
                 "addPeer": {
                   "peer": {
                     "address": "iroha-node0:10001",
-                    "peerKey": "TU7OhdtoBtOLCZOJqoRQRyXEkyGaEqaBI0C/I5KU56k="
+                    "peerKey": "p8cb5vRum1slti1L5BrmoyxK4nOUhon7q0l+6+yjdt0="
                   }
                 }
               },
@@ -17,7 +17,7 @@
                 "addPeer": {
                   "peer": {
                     "address": "iroha-node1:10001",
-                    "peerKey": "ZDhECoYOcjGWp9ldAwv8zR3z4A2fc05oV12HUCBKFEM="
+                    "peerKey": "/ujLsZo0Aor7JwVom/nzfQ1Ch1pPMJRMX7DZ8qwR/fs="
                   }
                 }
               },
@@ -25,7 +25,7 @@
                 "addPeer": {
                   "peer": {
                     "address": "iroha-node2:10001",
-                    "peerKey": "vd1YQE0TFeDrJ5AsXXyOsGAsFiOPAFdz30BrwZEwiSk="
+                    "peerKey": "nBjQMmEgwqHatK+UUjCT5ZIkVbgIW64tUyZBURNkPiI="
                   }
                 }
               },
@@ -33,7 +33,7 @@
                 "addPeer": {
                   "peer": {
                     "address": "iroha-node3:10001",
-                    "peerKey": "avAMsrwrmUk5DjJhD0yXO8fi5lnJd3fRHmQA/RDWCTs="
+                    "peerKey": "WkrQqzY8/8IMLhro0h7zAvvf9bjRudYJ9yrjA7WHMBE="
                   }
                 }
               },
