@@ -2,7 +2,7 @@ version: '3'
 
 services:
   iroha-node0:
-    image: hyperledger/iroha@sha256:eb059d2a03544e2bde91a0e16b7d03076b09bc31e9b970c1c4269f02084e8e91
+    image: hyperledger/iroha@sha256:bb048a90f72a570c4eb0db52f52ba501cffbc463adc090fbd561d798e18005d0
     container_name: iroha_node0
     ports:
       - "50051:50051"
@@ -26,7 +26,7 @@ services:
       - SYS_PTRACE
 
   iroha-node1:
-    image: hyperledger/iroha@sha256:eb059d2a03544e2bde91a0e16b7d03076b09bc31e9b970c1c4269f02084e8e91
+    image: hyperledger/iroha@sha256:bb048a90f72a570c4eb0db52f52ba501cffbc463adc090fbd561d798e18005d0
     container_name: iroha_node1
     ports:
       - "50052:50051"
@@ -51,7 +51,7 @@ services:
       - SYS_PTRACE
 
   iroha-node2:
-    image: hyperledger/iroha@sha256:eb059d2a03544e2bde91a0e16b7d03076b09bc31e9b970c1c4269f02084e8e91
+    image: hyperledger/iroha@sha256:bb048a90f72a570c4eb0db52f52ba501cffbc463adc090fbd561d798e18005d0
     container_name: iroha_node2
     ports:
     - "50053:50051"
@@ -76,7 +76,7 @@ services:
     - SYS_PTRACE
 
   iroha-node3:
-    image: hyperledger/iroha@sha256:eb059d2a03544e2bde91a0e16b7d03076b09bc31e9b970c1c4269f02084e8e91
+    image: hyperledger/iroha@sha256:bb048a90f72a570c4eb0db52f52ba501cffbc463adc090fbd561d798e18005d0
     container_name: iroha_node3
     ports:
     - "50054:50051"
