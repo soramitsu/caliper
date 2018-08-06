@@ -49,15 +49,71 @@ function blob2array(blob) {
 }
 
 /**
+ * Create Iroha transaction.
+ * @param {string} account - creator account id
+ * @param {iroha.Keypair} keys - keypair to sign
+ * @param {Array} commands - transaction's commands
+ * @return {{txProto: *, txHash: Uint8Array}} object with transaction's protobuf and hash
+ */
+function createTransaction (account, keys, commands) {
+    let tx = txBuilder.creatorAccountId(account).createdTime(Date.now());
+
+    // Write commands to transaction and build instance of Transaction Object
+    let txInstance = commands
+        .reduce((prev, command) => {
+            let cmdType   = command.tx;
+            let args = command.args;
+            if(args.length !== cmdType.argslen) {
+                throw new Error('Wrong arguments number for ' + cmdType.fn + ' : expected ' + cmdType.argslen + ' , got ' + args.length);
+            }
+
+            return tx[cmdType.fn].apply(tx, args);
+        }, tx)
+        .build();
+
+    // Sign new transaction and convert it to Uint8Array
+    let txArray  = blob2array(
+        (new ModelProtoTransaction(txInstance))
+            .signAndAddSignature(keys)
+            .finish()
+            .blob()
+    );
+
+    return {
+        txProto: pbTransaction.deserializeBinary(txArray),
+        txHash: blob2array(txInstance.hash().blob())
+    };
+}
+
+/**
  * Create Iroha transaction and send it to a node.
  * @param {endpointGrpc.CommandServiceClient} client - GRPC endpoint
  * @param {string} account - creator account id
  * @param {number} time - time of creation
  * @param {iroha.Keypair} keys - keypair to sign
- * @param {Array} commands - transaction commands
- * @returns {Promise} promise with sended transaction
+ * @param {Array} commands - transaction's commands
+ * @returns {Promise<Uint8Array>} promise with a hash of sent transaction
  */
 function irohaCommand(client, account, time, keys, commands) {
+    // TODO: Make this code work
+    // let {txProto, txHash} = createTransaction(account, keys, commands);
+    //
+    // util.log('Command', JSON.stringify(txProto))
+    //
+    // return new Promise((resolve, reject) => {
+    //     client.torii(txProto, (err, data) => {
+    //         if (err) {
+    //             reject(err);
+    //         } else {
+    //             util.log(JSON.stringify(data));
+    //             resolve(txHash);
+    //         }
+    //     });
+    // }).catch((err) => {
+    //     util.log(err);
+    //     return Promise.reject('Failed to submit Iroha transaction');
+    // });
+
     try {
         let tx = txBuilder.creatorAccountId(account).createdTime(time);
         let txHash;
@@ -100,9 +156,8 @@ function irohaCommand(client, account, time, keys, commands) {
                 util.log(err);
                 return Promise.reject('Failed to submit Iroha transaction');
             });
-    }
-    catch(err) {
-        util.log(err);
+    } catch(e) {
+        util.log(e);
         return Promise.reject('Failed to submit Iroha transaction');
     }
 }
@@ -116,7 +171,7 @@ function irohaCommand(client, account, time, keys, commands) {
  * @param {iroha.Keypair} keys - keypair to sign
  * @param {Array} commands - query commands
  * @param {Function} callback - callback with query response
- * @returns {Promise<any>}
+ * @returns {Promise<iroha.QueryResponse>} promise with QueryResponse protobuf object
  */
 function irohaQuery(client, account, time, counter, keys, commands, callback) {
     try {
@@ -187,8 +242,8 @@ class Iroha extends BlockchainInterface {
     }
 
     prepareClients(number) {
-        try{
-            util.log('Creating new account for test clients......');
+        try {
+            util.log('Creating new accounts for test clients......');
 
             // get admin info
             let config = require(this.configPath);
@@ -207,10 +262,9 @@ class Iroha extends BlockchainInterface {
 
             // create account for each client
             let result = [];
-            let promises = [];
-            let node = this._findNode();
+            let commands = [];
+            let node = this._findRandomNode();
             let grpcCommandClient = new endpointGrpc.CommandServiceClient(node.torii, grpc.credentials.createInsecure());
-            let grpcQueryClient   = new endpointGrpc.QueryServiceClient(node.torii, grpc.credentials.createInsecure());
 
             // generate random name, [a-z]
             let seed = 'abcdefghijklmnopqrstuvwxyz';
@@ -227,7 +281,8 @@ class Iroha extends BlockchainInterface {
                     return generateName();
                 }
             };
-            for(let i = 0 ; i < number ; i++) {
+
+            for (let i = 0 ; i < number ; i++) {
                 let keys = crypto.generateKeypair();
                 let name = generateName();
                 let id   = name + '@' + domain;
@@ -239,69 +294,62 @@ class Iroha extends BlockchainInterface {
                     pubKey:  keys.publicKey().hex(),
                     privKey: keys.privateKey().hex()
                 });
-                // build create account transaction
-                let commands = [{
+
+                // Build create account transaction
+                commands.push({
                     tx: irohaType.txType.CREATE_ACCOUNT,
                     args: [name, domain, keys.publicKey()]
-                },
-                {
+                });
+                commands.push({
                     tx: irohaType.txType.APPEND_ROLE,
                     args: [id, 'admin']
-                },
-                {
+                });
+                commands.push({
                     tx: irohaType.txType.APPEND_ROLE,
                     args: [id, 'moneyad']
-                },];
+                });
+
                 util.log('Create account for ' + id);
-                let p = irohaCommand(grpcCommandClient, adminAccount, Date.now(), adminKeys, commands);
-                promises.push(p);
             }
-            let queryCounter = 1;
-            return Promise.all(promises)
-                .then(()=>{
-                    util.log('Submitted create account transactions.');
-                    return util.sleep(5000);
-                })
-                .then(()=>{
-                    util.log('Query accounts to see if they already exist ......');
-                    let promises = [];
-                    for(let i = 0 ; i < result.length ; i++) {
-                        let acc = result[i];
-                        let p = new Promise((resolve, reject)=>{
-                            irohaQuery(grpcQueryClient,
-                                adminAccount,
-                                Date.now(),
-                                queryCounter,
-                                adminKeys,
-                                [{
-                                    tx: irohaType.txType.GET_ACCOUNT,
-                                    args: [acc.id]
-                                }],
-                                (response) => {
-                                    let accountResp = response.getAccountResponse();
-                                    util.log('Got account successfully: ' + accountResp.getAccount().getAccountId());
-                                    resolve();
-                                }
-                            )
-                                .catch((err)=>{
-                                    util.log(err);
-                                    reject(new Error('Failed to query account'));
-                                });
+
+            return irohaCommand(grpcCommandClient, adminAccount, Date.now(), adminKeys, commands)
+                .then((txHash) => {
+                    let hex = Buffer.from(txHash).toString('hex');
+
+                    util.log(`Submitted create account transaction [${hex}]`);
+                    util.log(`Query accounts to see if they already exist [${hex}] ...`);
+
+                    let request = new endpointPb.TxStatusRequest();
+                    request.setTxHash(txHash);
+
+                    return new Promise((resolve, reject) => {
+                        let stream = grpcCommandClient.statusStream(request);
+                        stream.on('data', (data) => {
+                            let s = data.getTxStatus();
+
+                            // Got final status and close opened stream
+                            if (s === txStatus.COMMITTED ||
+                                s === txStatus.STATELESS_VALIDATION_FAILED ||
+                                s === txStatus.STATEFUL_VALIDATION_FAILED ||
+                                s === txStatus.NOT_RECEIVED) {
+                                stream.finished = true;
+                                return (s === txStatus.COMMITTED) ? resolve(data) : reject(data);
+                            }
                         });
-                        queryCounter++;
-                        promises.push(p);
-                    }
-                    return Promise.all(promises);
+                        stream.on('error', (err) => {
+                            util.log(err);
+                            return reject(new Error('Failed to query account'));
+                        });
+                    });
                 })
-                .then(()=>{
+                .then(() => {
                     util.log('Finished create accounts, save key pairs for later use');
                     return Promise.resolve(result);
                 })
-                .catch(()=>{
+                .catch(() => {
                     return Promise.reject(new Error('Could not create accounts for Iroha clients'));
                 });
-        }
-        catch (err) {
+        } catch (err) {
             util.log(err);
             return Promise.reject(new Error('Could not create accounts for Iroha clients'));
         }
@@ -352,7 +400,7 @@ class Iroha extends BlockchainInterface {
                     }
                 }
 
-                let node = this._findNode();
+                let node = this._findRandomNode();
                 contexts[args.id].torii = node.torii;
                 contexts[args.id].contract = fakeContracts;
             }
@@ -378,7 +426,7 @@ class Iroha extends BlockchainInterface {
                             let request = new endpointPb.TxStatusRequest();
                             request.setTxHash(status.GetID());
 
-                            self.grpcCommandClient.status(request, (err, response)=>{
+                            self.grpcCommandClient.status(request, (err, response) => {
                                 item.isquery = false;
                                 let final = false;
                                 if(err) {
@@ -519,7 +567,7 @@ class Iroha extends BlockchainInterface {
                         resolve(status);  // TODO: should check the response??
                     }
                 )
-                    .catch((err)=>{
+                    .catch((err) => {
                         util.log(err);
                         status.SetStatusFail();
                         resolve(status);
@@ -532,7 +580,7 @@ class Iroha extends BlockchainInterface {
         }
     }
 
-    _findNode() {
+    _findRandomNode() {
         let nodes  = [];
         let config = require(this.configPath);
         for(let i in config.iroha.network) {
